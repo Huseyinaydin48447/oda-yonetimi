@@ -654,8 +654,12 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
     doc.setFont(undefined,'normal'); doc.setFontSize(9);
 
     if(rooms.length > 1) {
-      doc.setTextColor(100,100,100); doc.text('Secilen odalar:', margin, sy);
-      doc.setTextColor(0,0,0); doc.text(rooms.join(', '), margin+35, sy); sy+=7;
+      doc.setTextColor(100,100,100); doc.text('Secilen odalar:', margin, sy); sy+=6;
+      doc.setTextColor(0,0,0);
+      const odaStr = rooms.join(', ');
+      const odaLines = doc.splitTextToSize(odaStr, PW - margin*2);
+      odaLines.forEach(line => { doc.text(line, margin, sy); sy+=6; });
+      sy+=2;
     }
     const dates = allEntries.map(e=>e.checkin_date).sort();
     if(dates.length){
@@ -700,34 +704,33 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
         try{
           const photo = await loadPhoto(urls[i]);
           const {dataUrl,fmt,pw,ph} = photo;
-          const isLandscape = pw>=ph;
-          doc.addPage([210,297], isLandscape?'landscape':'portrait');
-          const PPW=isLandscape?297:210, PPH=isLandscape?210:297;
-          const HEADER_H=12, mg=8;
+          // Her zaman yatay (landscape) sayfa
+          doc.addPage([297,210], 'landscape');
+          const PPW=297, PPH=210;
+          const HEADER_H=10, mg=6;
 
           doc.setFillColor(26,92,58);
           doc.rect(0,0,PPW,HEADER_H,'F');
           doc.setTextColor(255,255,255);
-          doc.setFontSize(8.5); doc.setFont(undefined,'bold');
-          doc.text(`${label} ${entry.room_no}`, mg, 8);
-          doc.setFont(undefined,'normal'); doc.setFontSize(8);
-          doc.text(fmtDatePDF(entry.checkin_date), PPW/2, 8, {align:'center'});
-          doc.setFontSize(7.5);
+          doc.setFontSize(8); doc.setFont(undefined,'bold');
+          doc.text(`${label} ${entry.room_no}`, mg, 7);
+          doc.setFont(undefined,'normal'); doc.setFontSize(7.5);
+          doc.text(fmtDatePDF(entry.checkin_date), PPW/2, 7, {align:'center'});
           globalPage++;
-          doc.text(`${globalPage}/${totalPhotos}`, PPW-mg, 8, {align:'right'});
+          doc.text(`${globalPage}/${totalPhotos}`, PPW-mg, 7, {align:'right'});
           doc.setTextColor(0,0,0);
 
-          let photoTop = HEADER_H+mg;
-          if(entry.note){doc.setFontSize(7);doc.setTextColor(80,80,80);doc.text(safe(entry.note.length>80?entry.note.slice(0,77)+'...':entry.note),mg,photoTop+3);photoTop+=7;}
-          if(entry.category){doc.setFontSize(6.5);doc.setTextColor(45,122,82);doc.text(safe(entry.category.split(',').filter(Boolean).join('  |  ')),mg,photoTop+2.5);photoTop+=6;}
-          doc.setTextColor(0,0,0);
-
-          const availW=PPW-mg*2, availH=PPH-photoTop-mg;
-          const ratio=pw/ph;
-          let drawW,drawH;
-          if(availW/availH>ratio){drawH=availH;drawW=drawH*ratio;}else{drawW=availW;drawH=drawW/ratio;}
-          const x=mg+(availW-drawW)/2, y=photoTop+(availH-drawH)/2;
-          doc.addImage(dataUrl,fmt,x,y,drawW,drawH,'','MEDIUM');
+          // Resmi sayfaya tam sığdır (not/kategori göstermeden max alan)
+          const photoTop = HEADER_H+2;
+          const availW = PPW - mg*2;
+          const availH = PPH - photoTop - mg;
+          const ratio = pw/ph;
+          let drawW, drawH;
+          if(availW/availH > ratio){ drawH=availH; drawW=drawH*ratio; }
+          else { drawW=availW; drawH=drawW/ratio; }
+          const x = mg+(availW-drawW)/2;
+          const y = photoTop+(availH-drawH)/2;
+          doc.addImage(dataUrl,fmt,x,y,drawW,drawH,'','FAST');
         }catch(e){}
         done++;
         dlUpdate(done, totalPhotos, 'Fotograflar PDF\'e ekleniyor...');
@@ -1059,35 +1062,30 @@ async function exportPDF(roomNo, entries) {
 
   function addPhotoPage(doc, photo, entry, pageNum, totalPages) {
     const {dataUrl, fmt, pw, ph} = photo;
-    const isLandscape = pw >= ph;
-    doc.addPage([210, 297], isLandscape ? 'landscape' : 'portrait');
-    const PW = isLandscape ? 297 : 210;
-    const PH = isLandscape ? 210 : 297;
-    const HEADER_H = 12;
-    const margin = 8;
+    // Her zaman yatay sayfa
+    doc.addPage([297, 210], 'landscape');
+    const PW = 297, PH = 210;
+    const HEADER_H = 10, margin = 6;
     doc.setFillColor(26, 92, 58);
     doc.rect(0, 0, PW, HEADER_H, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8.5); doc.setFont(undefined, 'bold');
+    doc.setFontSize(8); doc.setFont(undefined, 'bold');
     const label = mode === 'elektrik' ? 'Sayac' : 'Oda';
-    doc.text(`${label} ${entry.room_no}`, margin, 8);
-    doc.setFont(undefined, 'normal'); doc.setFontSize(8);
-    doc.text(fmtDatePDF(entry.checkin_date), PW / 2, 8, {align: 'center'});
-    doc.setFontSize(7.5);
-    doc.text(`${pageNum} / ${totalPages}`, PW - margin, 8, {align: 'right'});
+    doc.text(`${label} ${entry.room_no}`, margin, 7);
+    doc.setFont(undefined, 'normal'); doc.setFontSize(7.5);
+    doc.text(fmtDatePDF(entry.checkin_date), PW / 2, 7, {align: 'center'});
+    doc.text(`${pageNum} / ${totalPages}`, PW - margin, 7, {align: 'right'});
     doc.setTextColor(0, 0, 0);
-    let photoTop = HEADER_H + margin;
-    if (entry.note) {const noteStr = safe(entry.note.length > 80 ? entry.note.slice(0, 77) + '...' : entry.note);doc.setFontSize(7);doc.setTextColor(80, 80, 80);doc.text(noteStr, margin, photoTop + 3);photoTop += 7;}
-    if (entry.category) {const cats = safe(entry.category.split(',').filter(Boolean).join('  |  '));doc.setFontSize(6.5);doc.setTextColor(45, 122, 82);doc.text(cats, margin, photoTop + 2.5);photoTop += 6;}
-    doc.setTextColor(0, 0, 0);
+    // Resmi maksimum alanda göster
+    const photoTop = HEADER_H + 2;
     const availW = PW - margin * 2;
     const availH = PH - photoTop - margin;
     const ratio = pw / ph;
     let drawW, drawH;
-    if (availW / availH > ratio) {drawH = availH;drawW = drawH * ratio;} else {drawW = availW;drawH = drawW / ratio;}
+    if (availW / availH > ratio) {drawH = availH; drawW = drawH * ratio;} else {drawW = availW; drawH = drawW / ratio;}
     const x = margin + (availW - drawW) / 2;
     const y = photoTop + (availH - drawH) / 2;
-    doc.addImage(dataUrl, fmt, x, y, drawW, drawH, '', 'MEDIUM');
+    doc.addImage(dataUrl, fmt, x, y, drawW, drawH, '', 'FAST');
   }
 
   try {
