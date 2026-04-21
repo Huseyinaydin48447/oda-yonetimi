@@ -703,8 +703,24 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
         dlStage('Oda ' + entry.room_no + ' · ' + (i+1) + '/' + urls.length);
         try{
           const photo = await loadPhoto(urls[i]);
-          const {dataUrl,fmt,pw,ph} = photo;
-          // Her zaman yatay (landscape) sayfa
+          let {dataUrl,fmt,pw,ph} = photo;
+          // Dik resmi döndürerek yatay hale getir
+          if(ph > pw) {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = ph; canvas.height = pw;
+              const ctx = canvas.getContext('2d');
+              const img = new Image();
+              img.src = dataUrl;
+              ctx.translate(ph/2, pw/2);
+              ctx.rotate(Math.PI/2);
+              ctx.drawImage(img, -pw/2, -ph/2, pw, ph);
+              dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+              fmt = 'JPEG';
+              const tmp = pw; pw = ph; ph = tmp;
+            } catch(e2) {}
+          }
+          // Her zaman yatay sayfa
           doc.addPage([297,210], 'landscape');
           const PPW=297, PPH=210;
           const HEADER_H=10, mg=6;
@@ -720,16 +736,12 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
           doc.text(`${globalPage}/${totalPhotos}`, PPW-mg, 7, {align:'right'});
           doc.setTextColor(0,0,0);
 
-          // Resmi sayfaya tam sığdır (not/kategori göstermeden max alan)
           const photoTop = HEADER_H+2;
-          const availW = PPW - mg*2;
-          const availH = PPH - photoTop - mg;
-          const ratio = pw/ph;
-          let drawW, drawH;
-          if(availW/availH > ratio){ drawH=availH; drawW=drawH*ratio; }
-          else { drawW=availW; drawH=drawW/ratio; }
-          const x = mg+(availW-drawW)/2;
-          const y = photoTop+(availH-drawH)/2;
+          const availW=PPW-mg*2, availH=PPH-photoTop-mg;
+          const ratio=pw/ph;
+          let drawW,drawH;
+          if(availW/availH>ratio){drawH=availH;drawW=drawH*ratio;}else{drawW=availW;drawH=drawW/ratio;}
+          const x=mg+(availW-drawW)/2, y=photoTop+(availH-drawH)/2;
           doc.addImage(dataUrl,fmt,x,y,drawW,drawH,'','FAST');
         }catch(e){}
         done++;
@@ -1061,7 +1073,23 @@ async function exportPDF(roomNo, entries) {
   }
 
   function addPhotoPage(doc, photo, entry, pageNum, totalPages) {
-    const {dataUrl, fmt, pw, ph} = photo;
+    let {dataUrl, fmt, pw, ph} = photo;
+    // Dik resmi canvas üzerinde 90° döndürerek yatay hale getir
+    if(ph > pw) {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = ph; canvas.height = pw;
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.src = dataUrl;
+        ctx.translate(ph/2, pw/2);
+        ctx.rotate(Math.PI/2);
+        ctx.drawImage(img, -pw/2, -ph/2, pw, ph);
+        dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        fmt = 'JPEG';
+        const tmp = pw; pw = ph; ph = tmp;
+      } catch(e) {}
+    }
     // Her zaman yatay sayfa
     doc.addPage([297, 210], 'landscape');
     const PW = 297, PH = 210;
@@ -1076,7 +1104,6 @@ async function exportPDF(roomNo, entries) {
     doc.text(fmtDatePDF(entry.checkin_date), PW / 2, 7, {align: 'center'});
     doc.text(`${pageNum} / ${totalPages}`, PW - margin, 7, {align: 'right'});
     doc.setTextColor(0, 0, 0);
-    // Resmi maksimum alanda göster
     const photoTop = HEADER_H + 2;
     const availW = PW - margin * 2;
     const availH = PH - photoTop - margin;
