@@ -93,15 +93,98 @@
   .toast.show{display:block}
   .toast.success{background:var(--accent)}
   .toast.error{background:var(--danger)}
-  .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;align-items:center;justify-content:center;flex-direction:column;padding:16px}
+
+  /* ══════════════════════════════════════════════
+     LIGHTBOX — Zoom destekli yeni sürüm
+  ══════════════════════════════════════════════ */
+  .lightbox{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);
+    z-index:200;align-items:center;justify-content:center;
+    flex-direction:column;padding:0;overflow:hidden;
+  }
   .lightbox.open{display:flex}
-  .lightbox img{max-width:100%;max-height:75vh;border-radius:var(--radius);object-fit:contain}
-  .lb-nav{display:flex;gap:12px;margin-top:16px;align-items:center}
-  .lb-btn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
-  .lb-btn:disabled{opacity:.3;cursor:default}
-  .lb-counter{color:rgba(255,255,255,.65);font-size:13px}
-  .lb-close{position:absolute;top:16px;right:16px;background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer}
-  .lb-lbl{color:rgba(255,255,255,.5);font-size:12px;margin-bottom:10px;font-family:'DM Mono',monospace}
+
+  /* Resim sarmalayıcı — sürükleme ve zoom burada */
+  .lb-img-wrap{
+    flex:1;width:100%;display:flex;align-items:center;justify-content:center;
+    overflow:hidden;position:relative;cursor:grab;
+  }
+  .lb-img-wrap.grabbing{cursor:grabbing;}
+  .lb-img-wrap.zoomed{cursor:move;}
+
+  #lb-img{
+    max-width:100%;max-height:100%;
+    object-fit:contain;
+    transform-origin:center center;
+    transition:transform .25s ease;
+    pointer-events:none; /* sürüklemeyi wrap yakalar */
+    border-radius:4px;
+    user-select:none;
+    -webkit-user-drag:none;
+  }
+  /* Zoom aktifken geçiş hızını kapat (akıcı sürükleme için) */
+  #lb-img.no-transition{transition:none!important;}
+
+  /* Üst araç çubuğu */
+  .lb-topbar{
+    width:100%;display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;flex-shrink:0;
+    background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent);
+    position:absolute;top:0;left:0;z-index:10;
+  }
+  .lb-lbl{color:rgba(255,255,255,.7);font-size:12px;font-family:'DM Mono',monospace;}
+
+  /* Zoom göstergesi + reset */
+  .lb-zoom-row{display:flex;align-items:center;gap:8px;}
+  .lb-zoom-badge{
+    background:rgba(255,255,255,.15);backdrop-filter:blur(6px);
+    color:#fff;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;
+    padding:4px 10px;border-radius:99px;min-width:48px;text-align:center;
+    transition:opacity .2s;
+  }
+  .lb-reset-btn{
+    background:rgba(255,255,255,.15);backdrop-filter:blur(6px);
+    border:none;color:#fff;font-size:14px;cursor:pointer;
+    width:30px;height:30px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s;
+  }
+  .lb-reset-btn:hover{background:rgba(255,255,255,.28);}
+  .lb-close{
+    background:rgba(255,255,255,.15);backdrop-filter:blur(6px);
+    border:none;color:#fff;font-size:18px;cursor:pointer;
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s;flex-shrink:0;
+  }
+  .lb-close:hover{background:rgba(255,255,255,.28);}
+
+  /* Alt navigasyon */
+  .lb-nav{
+    width:100%;display:flex;gap:12px;padding:14px 16px;align-items:center;
+    justify-content:center;flex-shrink:0;
+    background:linear-gradient(to top,rgba(0,0,0,.6),transparent);
+    position:absolute;bottom:0;left:0;
+  }
+  .lb-btn{
+    padding:9px 20px;border-radius:var(--radius-sm);
+    border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);
+    backdrop-filter:blur(6px);color:#fff;font-size:13px;cursor:pointer;
+    font-family:'DM Sans',sans-serif;transition:background .15s;
+  }
+  .lb-btn:hover{background:rgba(255,255,255,.2);}
+  .lb-btn:disabled{opacity:.3;cursor:default;}
+  .lb-counter{color:rgba(255,255,255,.65);font-size:13px;font-family:'DM Mono',monospace;}
+
+  /* Çift tıklama ipucu */
+  .lb-hint{
+    position:absolute;bottom:70px;left:50%;transform:translateX(-50%);
+    background:rgba(0,0,0,.55);backdrop-filter:blur(6px);color:rgba(255,255,255,.75);
+    font-size:11px;padding:5px 12px;border-radius:99px;
+    pointer-events:none;opacity:1;transition:opacity 1s ease;white-space:nowrap;
+  }
+  .lb-hint.hide{opacity:0;}
+
   .loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .entry-footer{border-top:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2);flex-wrap:wrap}
@@ -301,11 +384,28 @@
 
 </div>
 
-<!-- Lightbox -->
-<div class="lightbox" id="lb" onclick="if(event.target===this)closeLb()">
-  <button class="lb-close" onclick="closeLb()">✕</button>
-  <div class="lb-lbl" id="lb-lbl"></div>
-  <img id="lb-img" src="" alt=""/>
+<!-- ══════════════════════════════════════════════
+     LIGHTBOX — Zoom destekli yeni sürüm
+══════════════════════════════════════════════ -->
+<div class="lightbox" id="lb">
+
+  <!-- Üst çubuk: etiket + zoom göstergesi + kapat -->
+  <div class="lb-topbar">
+    <span class="lb-lbl" id="lb-lbl"></span>
+    <div class="lb-zoom-row">
+      <span class="lb-zoom-badge" id="lb-zoom-badge">%100</span>
+      <button class="lb-reset-btn" id="lb-reset-btn" title="Sıfırla" onclick="lbResetZoom()">↺</button>
+      <button class="lb-close" onclick="closeLb()">✕</button>
+    </div>
+  </div>
+
+  <!-- Resim alanı -->
+  <div class="lb-img-wrap" id="lb-img-wrap">
+    <img id="lb-img" src="" alt=""/>
+    <div class="lb-hint" id="lb-hint">Çift dokun ya da kaydır → yakınlaştır</div>
+  </div>
+
+  <!-- Alt navigasyon -->
   <div class="lb-nav">
     <button class="lb-btn" id="lb-prev" onclick="lbMove(-1)">← Önceki</button>
     <span class="lb-counter" id="lb-counter"></span>
@@ -332,16 +432,11 @@
       <h3>PDF Dışa Aktar</h3>
       <button class="pdf-panel-close" onclick="closePdfPanel()">✕</button>
     </div>
-
-    <!-- Option 1: All rooms -->
     <div class="pdf-option" id="pdf-opt-all" onclick="selectPdfOpt('all')">
       <div class="pdf-option-icon all">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a5c3a" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 0v2"/></svg>
       </div>
-      <div class="pdf-option-text">
-        <strong>Hepsini İndir</strong>
-        <span>Tüm odaların kayıtları tek PDF'te</span>
-      </div>
+      <div class="pdf-option-text"><strong>Hepsini İndir</strong><span>Tüm odaların kayıtları tek PDF'te</span></div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>
     </div>
     <div class="pdf-sub-panel" id="pdf-sub-all">
@@ -350,55 +445,35 @@
         Tüm Odaları PDF İndir
       </button>
     </div>
-
-    <!-- Option 2: Date range -->
     <div class="pdf-option" id="pdf-opt-date" onclick="selectPdfOpt('date')">
       <div class="pdf-option-icon date">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       </div>
-      <div class="pdf-option-text">
-        <strong>Tarih Aralığında İndir</strong>
-        <span>Seçtiğin tarihler arasındaki kayıtlar</span>
-      </div>
+      <div class="pdf-option-text"><strong>Tarih Aralığında İndir</strong><span>Seçtiğin tarihler arasındaki kayıtlar</span></div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>
     </div>
     <div class="pdf-sub-panel" id="pdf-sub-date">
-      <div class="field">
-        <span class="label">Başlangıç tarihi</span>
-        <input type="date" id="pdf-date-from"/>
-      </div>
-      <div class="field">
-        <span class="label">Bitiş tarihi</span>
-        <input type="date" id="pdf-date-to"/>
-      </div>
+      <div class="field"><span class="label">Başlangıç tarihi</span><input type="date" id="pdf-date-from"/></div>
+      <div class="field"><span class="label">Bitiş tarihi</span><input type="date" id="pdf-date-to"/></div>
       <button class="pdf-sub-btn" id="pdf-date-btn" onclick="runPdfDate()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Tarihe Göre PDF İndir
       </button>
     </div>
-
-    <!-- Option 3: Room numbers -->
     <div class="pdf-option" id="pdf-opt-rooms" onclick="selectPdfOpt('rooms')">
       <div class="pdf-option-icon rooms">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       </div>
-      <div class="pdf-option-text">
-        <strong>Oda Numarasına Göre İndir</strong>
-        <span>Belirli oda numaralarını yaz, PDF al</span>
-      </div>
+      <div class="pdf-option-text"><strong>Oda Numarasına Göre İndir</strong><span>Belirli oda numaralarını yaz, PDF al</span></div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>
     </div>
     <div class="pdf-sub-panel" id="pdf-sub-rooms">
-      <div class="field">
-        <span class="label">Oda numaraları (virgülle ayırın)</span>
-        <input type="text" id="pdf-rooms-input" placeholder="ör: 101, 205, 307, 412"/>
-      </div>
+      <div class="field"><span class="label">Oda numaraları (virgülle ayırın)</span><input type="text" id="pdf-rooms-input" placeholder="ör: 101, 205, 307, 412"/></div>
       <button class="pdf-sub-btn" id="pdf-rooms-btn" onclick="runPdfRooms()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Seçili Odaları PDF İndir
       </button>
     </div>
-
     <div style="height:8px"></div>
   </div>
 </div>
@@ -425,6 +500,284 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- ══════════════════════════════════════════════
+     LIGHTBOX ZOOM MOTORU
+     ──────────────────────────────────────────────
+     Desteklenen etkileşimler:
+       • Çift tıklama / çift dokunma  → %100 ↔ %250 toggle
+       • Pinch-to-zoom (iki parmak)   → serbest zoom
+       • Mouse tekerleği              → zoom in/out
+       • Sürükleme (mouse/touch)      → kaydırma (zoom > 1 iken)
+       • ↺ butonu                     → sıfırla
+       • Önceki/sonraki               → zoom sıfırlanır
+══════════════════════════════════════════════ -->
+<script>
+/* ── Lightbox durum değişkenleri ── */
+const LB = {
+  scale: 1,
+  minScale: 1,
+  maxScale: 5,
+  translateX: 0,
+  translateY: 0,
+  /* sürükleme */
+  isDragging: false,
+  dragStartX: 0,
+  dragStartY: 0,
+  dragStartTX: 0,
+  dragStartTY: 0,
+  /* pinch */
+  isPinching: false,
+  pinchStartDist: 0,
+  pinchStartScale: 1,
+  pinchMidX: 0,
+  pinchMidY: 0,
+  pinchStartTX: 0,
+  pinchStartTY: 0,
+  /* çift dokunma */
+  lastTapTime: 0,
+  lastTapX: 0,
+  lastTapY: 0,
+};
+
+const lbWrap = () => document.getElementById('lb-img-wrap');
+const lbImg  = () => document.getElementById('lb-img');
+
+/* Transform uygula */
+function lbApplyTransform(animate) {
+  const img = lbImg();
+  if (animate) {
+    img.classList.remove('no-transition');
+  } else {
+    img.classList.add('no-transition');
+  }
+  img.style.transform = `translate(${LB.translateX}px,${LB.translateY}px) scale(${LB.scale})`;
+  document.getElementById('lb-zoom-badge').textContent = Math.round(LB.scale * 100) + '%';
+}
+
+/* Sınırları hesapla ve uygula (pan sınırlama) */
+function lbClampTranslate() {
+  const wrap = lbWrap();
+  const img  = lbImg();
+  const wW = wrap.clientWidth;
+  const wH = wrap.clientHeight;
+  const iW = img.naturalWidth  || img.offsetWidth;
+  const iH = img.naturalHeight || img.offsetHeight;
+
+  // Ekranda görünen gerçek boyutlar (object-fit:contain hesabı)
+  const ratio = Math.min(wW / iW, wH / iH);
+  const dispW = iW * ratio * LB.scale;
+  const dispH = iH * ratio * LB.scale;
+
+  const maxX = Math.max(0, (dispW - wW) / 2);
+  const maxY = Math.max(0, (dispH - wH) / 2);
+
+  LB.translateX = Math.max(-maxX, Math.min(maxX, LB.translateX));
+  LB.translateY = Math.max(-maxY, Math.min(maxY, LB.translateY));
+}
+
+/* Zoom'u belirli bir noktaya göre ayarla */
+function lbZoomTo(newScale, originX, originY, animate) {
+  const wrap = lbWrap();
+  const rect = wrap.getBoundingClientRect();
+  const cx = (originX - rect.left) - rect.width  / 2;
+  const cy = (originY - rect.top)  - rect.height / 2;
+
+  const factor = newScale / LB.scale;
+  LB.translateX = cx - factor * (cx - LB.translateX);
+  LB.translateY = cy - factor * (cy - LB.translateY);
+  LB.scale = newScale;
+  lbClampTranslate();
+  lbApplyTransform(animate);
+  lbWrap().classList.toggle('zoomed', LB.scale > 1.05);
+}
+
+/* Zoom sıfırla */
+function lbResetZoom(animate) {
+  LB.scale = 1;
+  LB.translateX = 0;
+  LB.translateY = 0;
+  lbApplyTransform(animate !== false);
+  lbWrap().classList.remove('zoomed');
+}
+
+/* ── Mouse tekerleği zoom ── */
+function lbOnWheel(e) {
+  e.preventDefault();
+  const delta  = e.deltaY > 0 ? 0.85 : 1.18;
+  const newSc  = Math.max(LB.minScale, Math.min(LB.maxScale, LB.scale * delta));
+  lbZoomTo(newSc, e.clientX, e.clientY, false);
+}
+
+/* ── Mouse sürükleme ── */
+function lbOnMouseDown(e) {
+  if (LB.scale <= 1.05) return;
+  LB.isDragging = true;
+  LB.dragStartX  = e.clientX;
+  LB.dragStartY  = e.clientY;
+  LB.dragStartTX = LB.translateX;
+  LB.dragStartTY = LB.translateY;
+  lbWrap().classList.add('grabbing');
+}
+function lbOnMouseMove(e) {
+  if (!LB.isDragging) return;
+  LB.translateX = LB.dragStartTX + (e.clientX - LB.dragStartX);
+  LB.translateY = LB.dragStartTY + (e.clientY - LB.dragStartY);
+  lbClampTranslate();
+  lbApplyTransform(false);
+}
+function lbOnMouseUp() {
+  LB.isDragging = false;
+  lbWrap().classList.remove('grabbing');
+}
+
+/* ── Çift tıklama (mouse) ── */
+function lbOnDblClick(e) {
+  if (LB.scale > 1.3) {
+    lbResetZoom();
+  } else {
+    lbZoomTo(2.5, e.clientX, e.clientY, true);
+  }
+}
+
+/* ── Touch olayları ── */
+function lbTouchDist(t) {
+  const dx = t[0].clientX - t[1].clientX;
+  const dy = t[0].clientY - t[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+function lbTouchMid(t) {
+  return {
+    x: (t[0].clientX + t[1].clientX) / 2,
+    y: (t[0].clientY + t[1].clientY) / 2,
+  };
+}
+
+function lbOnTouchStart(e) {
+  if (e.touches.length === 2) {
+    /* Pinch başlangıcı */
+    e.preventDefault();
+    LB.isPinching     = true;
+    LB.isDragging     = false;
+    LB.pinchStartDist  = lbTouchDist(e.touches);
+    LB.pinchStartScale = LB.scale;
+    const mid = lbTouchMid(e.touches);
+    LB.pinchMidX  = mid.x;
+    LB.pinchMidY  = mid.y;
+    LB.pinchStartTX = LB.translateX;
+    LB.pinchStartTY = LB.translateY;
+  } else if (e.touches.length === 1) {
+    /* Çift dokunma tespiti */
+    const now = Date.now();
+    const t = e.touches[0];
+    if (now - LB.lastTapTime < 300 &&
+        Math.abs(t.clientX - LB.lastTapX) < 30 &&
+        Math.abs(t.clientY - LB.lastTapY) < 30) {
+      /* Çift dokunma! */
+      e.preventDefault();
+      if (LB.scale > 1.3) {
+        lbResetZoom(true);
+      } else {
+        lbZoomTo(2.5, t.clientX, t.clientY, true);
+      }
+      LB.lastTapTime = 0;
+      return;
+    }
+    LB.lastTapTime = now;
+    LB.lastTapX = t.clientX;
+    LB.lastTapY = t.clientY;
+
+    /* Tek parmak sürükleme (zoom aktifse) */
+    if (LB.scale > 1.05) {
+      LB.isDragging  = true;
+      LB.dragStartX  = t.clientX;
+      LB.dragStartY  = t.clientY;
+      LB.dragStartTX = LB.translateX;
+      LB.dragStartTY = LB.translateY;
+    }
+  }
+}
+
+function lbOnTouchMove(e) {
+  if (LB.isPinching && e.touches.length === 2) {
+    e.preventDefault();
+    const dist = lbTouchDist(e.touches);
+    const newSc = Math.max(LB.minScale, Math.min(LB.maxScale, LB.pinchStartScale * (dist / LB.pinchStartDist)));
+    lbZoomTo(newSc, LB.pinchMidX, LB.pinchMidY, false);
+  } else if (LB.isDragging && e.touches.length === 1 && LB.scale > 1.05) {
+    e.preventDefault();
+    const t = e.touches[0];
+    LB.translateX = LB.dragStartTX + (t.clientX - LB.dragStartX);
+    LB.translateY = LB.dragStartTY + (t.clientY - LB.dragStartY);
+    lbClampTranslate();
+    lbApplyTransform(false);
+  }
+}
+
+function lbOnTouchEnd(e) {
+  if (e.touches.length < 2) LB.isPinching = false;
+  if (e.touches.length === 0) LB.isDragging = false;
+}
+
+/* ── Olay dinleyicilerini bağla ── */
+function lbBindEvents() {
+  const wrap = lbWrap();
+  wrap.addEventListener('wheel',       lbOnWheel,      { passive: false });
+  wrap.addEventListener('mousedown',   lbOnMouseDown);
+  window.addEventListener('mousemove', lbOnMouseMove);
+  window.addEventListener('mouseup',   lbOnMouseUp);
+  wrap.addEventListener('dblclick',    lbOnDblClick);
+  wrap.addEventListener('touchstart',  lbOnTouchStart, { passive: false });
+  wrap.addEventListener('touchmove',   lbOnTouchMove,  { passive: false });
+  wrap.addEventListener('touchend',    lbOnTouchEnd);
+}
+
+/* ── Lightbox aç / kapat ── */
+let lbImgs = [], lbIdx = 0;
+
+function openLb(ei, ii) {
+  lbImgs = entryImages[ei] || [];
+  lbIdx  = ii;
+  updateLb();
+  document.getElementById('lb').classList.add('open');
+  /* İlk açılışta ipucunu göster, 3 sn sonra gizle */
+  const hint = document.getElementById('lb-hint');
+  hint.classList.remove('hide');
+  setTimeout(() => hint.classList.add('hide'), 3000);
+}
+
+function closeLb() {
+  document.getElementById('lb').classList.remove('open');
+  lbResetZoom(false);
+}
+
+function lbMove(d) {
+  lbIdx = Math.max(0, Math.min(lbImgs.length - 1, lbIdx + d));
+  lbResetZoom(false);
+  updateLb();
+}
+
+function updateLb() {
+  document.getElementById('lb-img').src    = lbImgs[lbIdx];
+  document.getElementById('lb-lbl').textContent     = (lbIdx + 1) + '. fotoğraf';
+  document.getElementById('lb-counter').textContent = (lbIdx + 1) + ' / ' + lbImgs.length;
+  document.getElementById('lb-prev').disabled = lbIdx === 0;
+  document.getElementById('lb-next').disabled = lbIdx === lbImgs.length - 1;
+}
+
+/* Kapatma: lightbox arka planına tıklama (wrap içine tıklamayı dışarıda bırak) */
+document.getElementById('lb').addEventListener('click', function(e) {
+  /* Sadece lightbox'ın arka planına (kendisine) tıklandığında kapat,
+     wrap veya butonlara değil */
+  if (e.target === this) closeLb();
+});
+
+/* Olayları sayfa yüklendiğinde bağla */
+document.addEventListener('DOMContentLoaded', lbBindEvents);
+/* DOMContentLoaded zaten geçmiş olabilir */
+if (document.readyState !== 'loading') lbBindEvents();
+</script>
+
 <script>
 // EXIF orientation okuyucu (küçük, bağımsız)
 function getExifOrientation(blob) {
@@ -466,7 +819,6 @@ async function fixOrientation(blob, dataUrl, pw, ph) {
     img.onload = () => {
       const canvas = document.createElement('canvas');
       let sw = pw, sh = ph;
-      // Döndürme gerekiyorsa w/h yer değiştirir
       const needsSwap = [5,6,7,8].includes(orientation);
       canvas.width  = needsSwap ? sh : sw;
       canvas.height = needsSwap ? sw : sh;
@@ -501,9 +853,8 @@ const MODES = {
   'elektrik':{title:'Elektrik Sayacı',ph:'Sayaç / oda no girin',rl:'Sayaç / Oda no *',dl:'Okuma tarihi *',nl:'Endeks / Not',np:'Endeks değeri veya not...',tags:['1. Kat','2. Kat','3. Kat','4. Kat','5. Kat','6. Kat','7. Kat','8. Kat']}
 };
 
-let mode='demirbaş',tab=0,lastVal='',pending=[],selTags=[],lbImgs=[],lbIdx=0,timer=null;
+let mode='demirbaş',tab=0,lastVal='',pending=[],selTags=[],timer=null;
 
-// ─── Download Progress Overlay ───────────────────────────────────────────
 function dlOpen(title, isPdf){
   q('dl-title-text').textContent = title;
   q('dl-subtitle').textContent = 'Lütfen bekleyin, sayfadan ayrilmayin';
@@ -524,12 +875,9 @@ function dlUpdate(done, total, stepText){
   q('dl-stats-left').textContent = done + ' / ' + total + ' fotograf';
   if(stepText) q('dl-step').textContent = stepText;
 }
-function dlStage(text){
-  q('dl-stats-right').textContent = text;
-}
-function dlClose(){
-  q('dl-overlay').classList.remove('open');
-}
+function dlStage(text){ q('dl-stats-right').textContent = text; }
+function dlClose(){ q('dl-overlay').classList.remove('open'); }
+
 let entryImages={};
 let entryData={};
 let openEntries = new Set();
@@ -580,7 +928,6 @@ function fmtBytes(b) {
 function q(id){return document.getElementById(id)}
 function qs(sel){return document.querySelectorAll(sel)}
 
-// ─── PDF Panel ──────────────────────────────────────────────────────────
 function openPdfPanel(){
   activePdfOpt = null;
   ['all','date','rooms'].forEach(k=>{
@@ -589,9 +936,7 @@ function openPdfPanel(){
   });
   q('pdf-panel-overlay').classList.add('open');
 }
-function closePdfPanel(){
-  q('pdf-panel-overlay').classList.remove('open');
-}
+function closePdfPanel(){ q('pdf-panel-overlay').classList.remove('open'); }
 function selectPdfOpt(key){
   if(activePdfOpt === key){
     q('pdf-sub-'+key).classList.remove('open');
@@ -674,7 +1019,6 @@ async function runPdfRooms(){
   }
 }
 
-// ─── Core PDF generator (used by all 3 options) ──────────────────────────
 async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, origLabel) {
   if(typeof window.jspdf === 'undefined') { showToast('jsPDF yuklenemedi','error'); return; }
   const titleText2 = rooms.length===1 ? 'Oda ' + rooms[0] + ' PDF' : rooms.length + ' Oda PDF Raporu';
@@ -692,7 +1036,6 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
     const blob = await res.blob();
     const rawDataUrl = await new Promise(resolve => { const r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(blob); });
     const dims = await new Promise(resolve => { const img=new Image();img.onload=()=>resolve({w:img.naturalWidth,h:img.naturalHeight});img.onerror=()=>resolve({w:4,h:3});img.src=rawDataUrl; });
-    // EXIF yön düzeltmesi
     const fixed = await fixOrientation(blob, rawDataUrl, dims.w, dims.h);
     return {dataUrl: fixed.dataUrl, fmt: 'JPEG', pw: fixed.pw, ph: fixed.ph};
   }
@@ -701,7 +1044,6 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
     const { jsPDF } = window.jspdf;
     const label = mode==='elektrik' ? 'Sayac' : 'Oda';
     const totalPhotos = allEntries.reduce((s,e)=>s+(e.photo_urls||[]).length, 0);
-
     const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
     const PW=210, margin=15;
 
@@ -771,7 +1113,6 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
         try{
           const photo = await loadPhoto(urls[i]);
           let {dataUrl,fmt,pw,ph} = photo;
-          // Dik resmi döndürerek yatay hale getir
           if(ph > pw) {
             try {
               const canvas = document.createElement('canvas');
@@ -787,11 +1128,9 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
               const tmp = pw; pw = ph; ph = tmp;
             } catch(e2) {}
           }
-          // Her zaman yatay sayfa
           doc.addPage([297,210], 'landscape');
           const PPW=297, PPH=210;
           const HEADER_H=10, mg=6;
-
           doc.setFillColor(26,92,58);
           doc.rect(0,0,PPW,HEADER_H,'F');
           doc.setTextColor(255,255,255);
@@ -802,7 +1141,6 @@ async function exportBulkPDFFromEntries(rooms, allEntries, filename, btnRef, ori
           globalPage++;
           doc.text(`${globalPage}/${totalPhotos}`, PPW-mg, 7, {align:'right'});
           doc.setTextColor(0,0,0);
-
           const photoTop = HEADER_H+2;
           const availW=PPW-mg*2, availH=PPH-photoTop-mg;
           const ratio=pw/ph;
@@ -1135,14 +1473,12 @@ async function exportPDF(roomNo, entries) {
     const blob = await res.blob();
     const rawDataUrl = await new Promise(resolve => {const r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(blob);});
     const dims = await new Promise(resolve => {const img=new Image();img.onload=()=>resolve({w:img.naturalWidth,h:img.naturalHeight});img.onerror=()=>resolve({w:4,h:3});img.src=rawDataUrl;});
-    // EXIF yön düzeltmesi
     const fixed = await fixOrientation(blob, rawDataUrl, dims.w, dims.h);
     return {dataUrl: fixed.dataUrl, fmt: 'JPEG', pw: fixed.pw, ph: fixed.ph};
   }
 
   function addPhotoPage(doc, photo, entry, pageNum, totalPages) {
     let {dataUrl, fmt, pw, ph} = photo;
-    // Dik resmi canvas üzerinde 90° döndürerek yatay hale getir
     if(ph > pw) {
       try {
         const canvas = document.createElement('canvas');
@@ -1158,7 +1494,6 @@ async function exportPDF(roomNo, entries) {
         const tmp = pw; pw = ph; ph = tmp;
       } catch(e) {}
     }
-    // Her zaman yatay sayfa
     doc.addPage([297, 210], 'landscape');
     const PW = 297, PH = 210;
     const HEADER_H = 10, margin = 6;
@@ -1218,7 +1553,7 @@ async function exportPDF(roomNo, entries) {
       if (entry.note) {doc.setTextColor(60,60,60);const n = safe(entry.note.length > 40 ? entry.note.slice(0, 37) + '...' : entry.note);doc.text(n, margin + 90, sy);}
       doc.setTextColor(26,92,58);doc.setFont(undefined,'bold');doc.text(`${pCount} foto`, PW - margin - 2, sy, {align:'right'});doc.setFont(undefined,'normal');doc.setTextColor(0,0,0);
       sy += 8;
-      if (sy > PH - 20) { doc.addPage(); sy = 20; }
+      if (sy > 210 - 20) { doc.addPage(); sy = 20; }
     });
 
     let done = 0, globalPage = 0;
@@ -1261,8 +1596,6 @@ function buildEntryCard(entry, globalIdx, isE, showRoomNum){
   const roomNumBadge = showRoomNum
     ? `<div class="room-num${isE?' e':''}" style="font-size:15px;padding:4px 10px;margin-right:2px">${entry.room_no}</div>`
     : '';
-  const cfg = MODES[mode];
-  const selCats = cats;
 
   return `<div class="entry-card">
     <div class="entry-head" data-ei="${globalIdx}" onclick="toggleEntry(this)">
@@ -1545,17 +1878,6 @@ function goRoom(rno){
   q('sinput').value=rno;
   goTab(0);
   doSearch(rno);
-}
-
-function openLb(ei,ii){lbImgs=entryImages[ei]||[];lbIdx=ii;updateLb();q('lb').classList.add('open');}
-function closeLb(){q('lb').classList.remove('open');}
-function lbMove(d){lbIdx=Math.max(0,Math.min(lbImgs.length-1,lbIdx+d));updateLb();}
-function updateLb(){
-  q('lb-img').src=lbImgs[lbIdx];
-  q('lb-lbl').textContent=`${lbIdx+1}. fotoğraf`;
-  q('lb-counter').textContent=`${lbIdx+1} / ${lbImgs.length}`;
-  q('lb-prev').disabled=lbIdx===0;
-  q('lb-next').disabled=lbIdx===lbImgs.length-1;
 }
 
 function showToast(msg,type=''){
