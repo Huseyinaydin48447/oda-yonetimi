@@ -192,10 +192,10 @@
   .ml-stat-v{font-size:18px;font-weight:600;font-family:'DM Mono',monospace;}
   .ml-stat-l{font-size:11px;color:var(--muted);margin-top:2px;}
   .ml-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-  .ml-head{display:grid;grid-template-columns:46px 58px 84px 50px 1fr 1fr 1fr 52px;background:var(--surface2);border-bottom:1px solid var(--border);}
+  .ml-head{display:grid;grid-template-columns:46px 58px 84px 50px 1fr 1fr 1fr 52px 64px;background:var(--surface2);border-bottom:1px solid var(--border);}
   .ml-head span{font-size:11px;font-weight:600;color:var(--muted);padding:9px 5px;text-align:center;}
   .ml-head span:first-child{text-align:left;padding-left:10px;}
-  .ml-row{display:grid;grid-template-columns:46px 58px 84px 50px 1fr 1fr 1fr 52px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;}
+  .ml-row{display:grid;grid-template-columns:46px 58px 84px 50px 1fr 1fr 1fr 52px 64px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;}
   .ml-row:last-child{border-bottom:none;}
   .ml-row:active{background:var(--surface2);}
   .ml-row.gr{border-left:3px solid var(--accent);}
@@ -214,6 +214,8 @@
   .ml-c.fc.neg{color:var(--danger);font-weight:600;}
   .ml-c.fc.none{color:var(--muted);}
   .ml-empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:13px;}
+  .ml-calc-btn{padding:5px 8px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid var(--accent-mid);background:var(--accent-light);color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;line-height:1.2;}
+  .ml-calc-btn:active{background:#c5e0d0;}
 
   /* SAYAÇ HESAPLAMA STILLERI */
   .meter-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:0;}
@@ -335,6 +337,39 @@
   <!-- EKLE -->
   <div class="screen" id="s1">
     <div class="status-bar"><div class="status-dot"></div><span id="conn-text">Bağlanıyor...</span></div>
+    
+    <!-- Dönem Aralığı - sadece Demirbaş modunda görünür -->
+    <div class="field" id="donem-field" style="display:none;">
+      <span class="label">Dönem Aralığı</span>
+      <select id="f-donem">
+        <option value="">Seçiniz</option>
+        <option value="1 - 15 Ocak">1. Dönem: 1 - 15 Ocak</option>
+        <option value="16 - 30 Ocak">2. Dönem: 16 - 30 Ocak</option>
+        <option value="31 Ocak - 14 Şubat">3. Dönem: 31 Ocak - 14 Şubat</option>
+        <option value="15 Şubat - 1 Mart">4. Dönem: 15 Şubat - 1 Mart</option>
+        <option value="2 - 16 Mart">5. Dönem: 2 - 16 Mart</option>
+        <option value="17 - 31 Mart">6. Dönem: 17 - 31 Mart</option>
+        <option value="1 - 15 Nisan">7. Dönem: 1 - 15 Nisan</option>
+        <option value="16 - 30 Nisan">8. Dönem: 16 - 30 Nisan</option>
+        <option value="1 - 15 Mayıs">9. Dönem: 1 - 15 Mayıs</option>
+        <option value="16 - 30 Mayıs">10. Dönem: 16 - 30 Mayıs</option>
+        <option value="31 Mayıs - 14 Haziran">11. Dönem: 31 Mayıs - 14 Haziran</option>
+        <option value="15 - 29 Haziran">12. Dönem: 15 - 29 Haziran</option>
+        <option value="30 Haziran - 14 Temmuz">13. Dönem: 30 Haziran - 14 Temmuz</option>
+        <option value="15 - 29 Temmuz">14. Dönem: 15 - 29 Temmuz</option>
+        <option value="30 Temmuz - 13 Ağustos">15. Dönem: 30 Temmuz - 13 Ağustos</option>
+        <option value="14 - 28 Ağustos">16. Dönem: 14 - 28 Ağustos</option>
+        <option value="29 Ağustos - 12 Eylül">17. Dönem: 29 Ağustos - 12 Eylül</option>
+        <option value="13 - 27 Eylül">18. Dönem: 13 - 27 Eylül</option>
+        <option value="28 Eylül - 12 Ekim">19. Dönem: 28 Eylül - 12 Ekim</option>
+        <option value="13 - 27 Ekim">20. Dönem: 13 - 27 Ekim</option>
+        <option value="2 - 16 Kasım">21. Dönem: 2 - 16 Kasım</option>
+        <option value="17 Kasım - 1 Aralık">22. Dönem: 17 Kasım - 1 Aralık</option>
+        <option value="2 - 16 Aralık">23. Dönem: 2 - 16 Aralık</option>
+        <option value="17 - 31 Aralık">24. Dönem: 17 - 31 Aralık</option>
+      </select>
+    </div>
+    
     <div class="field" id="io-type-field" style="display:none;">
       <span class="label">İşlem Türü</span>
       <select id="f-type"><option value="giris">Giriş</option><option value="cikis">Çıkış</option></select>
@@ -735,6 +770,7 @@ function setMode(m){
   const cfg=MODES[m],isE=m==='elektrik';
   q('io-type-field').style.display=isE?'block':'none';
   q('meter-values-field').style.display=isE?'block':'none';
+  q('donem-field').style.display=isE?'none':'block';
   q('topbar-title').textContent=cfg.title;
   q('sinput').placeholder=cfg.ph;
   q('f-room-label').textContent=cfg.rl;
@@ -764,7 +800,29 @@ function initHesapTab(){
     tarifeCiz();
   }
 }
-function startTimer(){if(timer)clearInterval(timer);timer=setInterval(()=>{if(openEntries.size>0)return;if(tab===0){if(searchTab==='room'&&lastVal)doSearch(lastVal,true);else if(searchTab==='date'){const f=q('d-from').value,t=q('d-to').value;if(f&&t)doDateSearch(true);}}else if(tab===2)loadAll(true);else if(tab===3)loadMeterList(true);},3000);}
+function startTimer(){if(timer)clearInterval(timer);timer=setInterval(()=>{if(openEntries.size>0)return;if(tab===0){if(searchTab==='room'&&lastVal)doSearch(lastVal,true);else if(searchTab==='date'){const f=q('d-from').value,t=q('d-to').value;if(f&&t)doDateSearch(true);}}else if(tab===2)loadAll(true);else if(tab===3)loadMeterListSilentCheck();},3000);}
+
+async function loadMeterListSilentCheck(){
+  try{
+    const res=await api('/rest/v1/entries?mode=eq.elektrik&order=checkin_date.desc,room_no.asc&select=id,room_no,checkin_date,category,note,type,meter_values,photo_urls');
+    const newData=await res.json();
+    const newSig=JSON.stringify(newData.map(e=>e.id+':'+(e.checkin_date||'')+(e.type||'')+(e.note||'')+(JSON.stringify(e.meter_values||{}))));
+    const oldSig=JSON.stringify(mlAllData.map(e=>e.id+':'+(e.checkin_date||'')+(e.type||'')+(e.note||'')+(JSON.stringify(e.meter_values||{}))));
+    if(newSig===oldSig)return;
+    const scrollTop=q('ml-wrap')?.scrollTop||0;
+    const katVal=q('ml-kat')?.value||'';
+    const searchVal=q('ml-search')?.value||'';
+    mlAllData=newData;
+    const katSet=new Set();
+    mlAllData.forEach(e=>{if(e.category)e.category.split(',').filter(Boolean).forEach(k=>katSet.add(k.trim()));});
+    const sel=q('ml-kat');
+    sel.innerHTML='<option value="">Tüm katlar</option>';
+    [...katSet].sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o);});
+    if(katVal&&katSet.has(katVal))sel.value=katVal;
+    mlFilter();
+    setTimeout(()=>{if(q('ml-wrap'))q('ml-wrap').scrollTop=scrollTop;},10);
+  }catch(e){}
+}
 
 /* tags */
 function togTag(el){const tr=el.closest('.tags-row'),wasOn=el.classList.contains('on');tr.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));selTags=[];if(!wasOn){el.classList.add('on');selTags=[el.textContent];}}
@@ -807,10 +865,12 @@ async function saveEdit(entryId,ei){
     const np=document.getElementById(`edit-photos-${entryId}`);let newUrls=[...(entry.photo_urls||[])];
     if(np&&np.files.length){for(const f of [...np.files]){const{file:c}=await compressImage(f);newUrls.push(await uploadImg(c,entry.room_no));}}
     const body={note,checkin_date:date,category:tags,photo_urls:newUrls};
+    if(mode==='demirbaş'){const ed=document.getElementById(`edit-donem-${entryId}`);if(ed)body.donem=ed.value;}
     if(mode==='elektrik'){const l1=document.getElementById(`edit-l1-${entryId}`);const l2=document.getElementById(`edit-l2-${entryId}`);const l3=document.getElementById(`edit-l3-${entryId}`);if(l1&&l2&&l3)body.meter_values={l1:parseFloat(l1.value)||0,l2:parseFloat(l2.value)||0,l3:parseFloat(l3.value)||0};}
     if(mode==='elektrik'&&tv!==null)body.type=tv;
     const r=await api(`/rest/v1/entries?id=eq.${entryId}`,{method:'PATCH',body:JSON.stringify(body)});if(!r.ok)throw new Error('Kayıt başarısız');
-    const upd={...entry,note,checkin_date:date,category:tags,photo_urls:newUrls};
+       const upd={...entry,note,checkin_date:date,category:tags,photo_urls:newUrls};
+    if(body.donem!==undefined)upd.donem=body.donem;
     if(mode==='elektrik'&&tv!==null)upd.type=tv;if(body.meter_values)upd.meter_values=body.meter_values;
     entryData[ei]=upd;entryImages[ei]=newUrls;refreshCard(ei,upd);showToast('Güncellendi!','success');
   }catch(e){showToast('Hata: '+e.message,'error');sb.innerHTML=orig;sb.disabled=false;}
@@ -841,7 +901,7 @@ function buildEntryCard(entry,gi,isE,showRN){
   return`<div class="entry-card">
     <div class="entry-head" data-ei="${gi}" onclick="toggleEntry(this)">${rnb}
       <div class="date-badge${isE?' e':''}">${entry.type==='cikis'?'Çıkış':'Giriş'} · ${fmtDate(entry.checkin_date)}</div>
-      <div class="entry-meta">${cats.length?`<div class="cat">${cats.join(' · ')}</div>`:''}${entry.note?`<div class="nt">${entry.note}</div>`:''}</div>
+          <div class="entry-meta">${cats.length?`<div class="cat">${cats.join(' · ')}</div>`:''}${entry.donem?`<div class="nt" style="color:var(--amber);font-weight:500;">📅 ${entry.donem}</div>`:''}${entry.note?`<div class="nt">${entry.note}</div>`:''}</div>
       <span class="entry-count">${urls.length} foto</span>
       <svg class="chevron${isOpen?' open':''}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
     </div>
@@ -859,13 +919,14 @@ function buildEntryCard(entry,gi,isE,showRN){
     </div>
     <div id="edit-panel-${entry.id}" style="display:none;padding:12px 14px;border-top:1px solid var(--border);background:var(--surface2)">
       <div class="field"><span class="label">Tarih</span><input type="date" id="edit-date-${entry.id}"/></div>
+            ${!isE?`<div class="field"><span class="label">Dönem Aralığı</span><select id="edit-donem-${entry.id}"><option value="">Seçiniz</option><option value="1 - 15 Ocak" ${entry.donem==='1 - 15 Ocak'?'selected':''}>1. Dönem: 1 - 15 Ocak</option><option value="16 - 30 Ocak" ${entry.donem==='16 - 30 Ocak'?'selected':''}>2. Dönem: 16 - 30 Ocak</option><option value="31 Ocak - 14 Şubat" ${entry.donem==='31 Ocak - 14 Şubat'?'selected':''}>3. Dönem: 31 Ocak - 14 Şubat</option><option value="15 Şubat - 1 Mart" ${entry.donem==='15 Şubat - 1 Mart'?'selected':''}>4. Dönem: 15 Şubat - 1 Mart</option><option value="2 - 16 Mart" ${entry.donem==='2 - 16 Mart'?'selected':''}>5. Dönem: 2 - 16 Mart</option><option value="17 - 31 Mart" ${entry.donem==='17 - 31 Mart'?'selected':''}>6. Dönem: 17 - 31 Mart</option><option value="1 - 15 Nisan" ${entry.donem==='1 - 15 Nisan'?'selected':''}>7. Dönem: 1 - 15 Nisan</option><option value="16 - 30 Nisan" ${entry.donem==='16 - 30 Nisan'?'selected':''}>8. Dönem: 16 - 30 Nisan</option><option value="1 - 15 Mayıs" ${entry.donem==='1 - 15 Mayıs'?'selected':''}>9. Dönem: 1 - 15 Mayıs</option><option value="16 - 30 Mayıs" ${entry.donem==='16 - 30 Mayıs'?'selected':''}>10. Dönem: 16 - 30 Mayıs</option><option value="31 Mayıs - 14 Haziran" ${entry.donem==='31 Mayıs - 14 Haziran'?'selected':''}>11. Dönem: 31 Mayıs - 14 Haziran</option><option value="15 - 29 Haziran" ${entry.donem==='15 - 29 Haziran'?'selected':''}>12. Dönem: 15 - 29 Haziran</option><option value="30 Haziran - 14 Temmuz" ${entry.donem==='30 Haziran - 14 Temmuz'?'selected':''}>13. Dönem: 30 Haziran - 14 Temmuz</option><option value="15 - 29 Temmuz" ${entry.donem==='15 - 29 Temmuz'?'selected':''}>14. Dönem: 15 - 29 Temmuz</option><option value="30 Temmuz - 13 Ağustos" ${entry.donem==='30 Temmuz - 13 Ağustos'?'selected':''}>15. Dönem: 30 Temmuz - 13 Ağustos</option><option value="14 - 28 Ağustos" ${entry.donem==='14 - 28 Ağustos'?'selected':''}>16. Dönem: 14 - 28 Ağustos</option><option value="29 Ağustos - 12 Eylül" ${entry.donem==='29 Ağustos - 12 Eylül'?'selected':''}>17. Dönem: 29 Ağustos - 12 Eylül</option><option value="13 - 27 Eylül" ${entry.donem==='13 - 27 Eylül'?'selected':''}>18. Dönem: 13 - 27 Eylül</option><option value="28 Eylül - 12 Ekim" ${entry.donem==='28 Eylül - 12 Ekim'?'selected':''}>19. Dönem: 28 Eylül - 12 Ekim</option><option value="13 - 27 Ekim" ${entry.donem==='13 - 27 Ekim'?'selected':''}>20. Dönem: 13 - 27 Ekim</option><option value="2 - 16 Kasım" ${entry.donem==='2 - 16 Kasım'?'selected':''}>21. Dönem: 2 - 16 Kasım</option><option value="17 Kasım - 1 Aralık" ${entry.donem==='17 Kasım - 1 Aralık'?'selected':''}>22. Dönem: 17 Kasım - 1 Aralık</option><option value="2 - 16 Aralık" ${entry.donem==='2 - 16 Aralık'?'selected':''}>23. Dönem: 2 - 16 Aralık</option><option value="17 - 31 Aralık" ${entry.donem==='17 - 31 Aralık'?'selected':''}>24. Dönem: 17 - 31 Aralık</option></select></div>`:''}
       <div class="field"><span class="label">Not</span><textarea id="edit-note-${entry.id}" rows="2" placeholder="Not..."></textarea></div>
       <div class="field"><span class="label">Kategori</span><div class="tags-row" id="edit-tags-${entry.id}"></div></div>
       ${isE?`<div class="field"><span class="label">Sayaç Değerleri (L1, L2, L3)</span><div style="display:flex;gap:8px;"><input type="number" step="0.01" id="edit-l1-${entry.id}" placeholder="L1" style="text-align:center" value="${entry.meter_values?.l1??0}"><input type="number" step="0.01" id="edit-l2-${entry.id}" placeholder="L2" style="text-align:center" value="${entry.meter_values?.l2??0}"><input type="number" step="0.01" id="edit-l3-${entry.id}" placeholder="L3" style="text-align:center" value="${entry.meter_values?.l3??0}"></div></div>`:''}
       <div class="field"><span class="label">Yeni fotoğraf ekle</span><input type="file" id="edit-photos-${entry.id}" accept="image/*" multiple/></div>
       <button class="btn btn-primary" id="edit-save-${entry.id}" onclick="event.stopPropagation();saveEdit('${entry.id}',${gi})">Kaydet</button>
     </div>
-  </div>`;
+  </div>`
 }
 
 /* search */
@@ -919,6 +980,7 @@ function toggleEntry(head){const ei=parseInt(head.dataset.ei);const body=head.ne
 async function saveEntry(){
   const type=mode==='elektrik'?q('f-type').value:null;
   const roomNo=q('f-room').value.trim(),date=q('f-date').value,note=q('f-note').value.trim();
+  const donem = mode==='demirbaş' ? q('f-donem').value.trim() : null;
   let mv=null;if(mode==='elektrik')mv={l1:parseFloat(q('f-l1').value)||0,l2:parseFloat(q('f-l2').value)||0,l3:parseFloat(q('f-l3').value)||0};
   if(!roomNo){showToast('Numara gerekli!','error');return;}
   if(!date){showToast('Tarih gerekli!','error');return;}
@@ -931,9 +993,9 @@ async function saveEntry(){
     if(mode==='elektrik'&&type)filter+=`&type=eq.${encodeURIComponent(type)}`;
     const ex=await(await api(`/rest/v1/entries?${filter}&limit=1`)).json();
     if(ex.length>0){const merged=[...(ex[0].photo_urls||[]),...urls];await api(`/rest/v1/entries?id=eq.${ex[0].id}`,{method:'PATCH',body:JSON.stringify({photo_urls:merged,note:note||ex[0].note,category:selTags.join(',')||ex[0].category,type})});showToast('Fotoğraflar mevcut kayda eklendi!','success');}
-    else{const body={room_no:roomNo,mode,checkin_date:date,category:selTags.join(','),note,photo_urls:urls,type};if(mode==='elektrik')body.meter_values=mv;await api('/rest/v1/entries',{method:'POST',body:JSON.stringify(body)});showToast('Yeni kayıt oluşturuldu!','success');}
+    else{const body={room_no:roomNo,mode,checkin_date:date,category:selTags.join(','),note,photo_urls:urls,type,donem: donem || null };if(mode==='elektrik')body.meter_values=mv;await api('/rest/v1/entries',{method:'POST',body:JSON.stringify(body)});showToast('Yeni kayıt oluşturuldu!','success');}
     pending=[];selTags=[];qs('.tag').forEach(t=>t.classList.remove('on'));
-    q('f-room').value='';q('f-note').value='';q('f-date').value=today();q('prev-row').innerHTML='';q('compress-status').innerHTML='';
+    q('f-room').value='';q('f-note').value='';q('f-date').value=today();q('f-donem').value='';q('prev-row').innerHTML='';q('compress-status').innerHTML='';
     const sv=q('sinput')?.value.trim();if(sv==roomNo){openEntries.clear();doSearch(roomNo,true);}
     if(tab===2)loadAll(true);if(tab===3)loadMeterList(true);
   }catch(e){showToast('Hata: '+e.message,'error');}
@@ -969,17 +1031,20 @@ function mlSetType(t){
 
 async function loadMeterList(silent=false){
   const wrap=q('ml-wrap');
+  const scrollTop=wrap?.scrollTop||0;
+  const katVal=q('ml-kat')?.value||'';
   if(!silent)wrap.innerHTML='<div class="ml-empty">Yükleniyor...</div>';
   try{
     const res=await api('/rest/v1/entries?mode=eq.elektrik&order=checkin_date.desc,room_no.asc&select=id,room_no,checkin_date,category,note,type,meter_values,photo_urls');
     mlAllData=await res.json();
     const katSet=new Set();
     mlAllData.forEach(e=>{if(e.category)e.category.split(',').filter(Boolean).forEach(k=>katSet.add(k.trim()));});
-    const sel=q('ml-kat'),cur=sel.value;
+    const sel=q('ml-kat'),cur=silent?katVal:sel.value;
     sel.innerHTML='<option value="">Tüm katlar</option>';
     [...katSet].sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o);});
     if(cur&&katSet.has(cur))sel.value=cur;
     mlFilter();
+    if(silent)setTimeout(()=>{if(q('ml-wrap'))q('ml-wrap').scrollTop=scrollTop;},10);
   }catch(e){wrap.innerHTML='<div class="ml-empty">Bağlantı hatası</div>';}
 }
 
@@ -1019,19 +1084,16 @@ function renderMeterList(){
   const wrap=q('ml-wrap'),statsEl=q('ml-stats');
   if(!mlFiltered.length){wrap.innerHTML='<div class="ml-empty">Kayıt bulunamadı</div>';statsEl.innerHTML='';return;}
 
-  // 1. ADIM: Tüm veriyi kronolojik olarak sırala (Tarih aynıysa önce Giriş sonra Çıkış gelsin)
   const chronologicalData = [...mlAllData].sort((a, b) => {
     const dateA = new Date(a.checkin_date);
     const dateB = new Date(b.checkin_date);
     if (dateA - dateB !== 0) return dateA - dateB;
-    // Tarihler aynıysa: Giriş her zaman önce gelmeli ki Çıkış onu hesaplayabilsin
     return a.type === 'giris' ? -1 : 1;
   });
 
   const farkMap = {};
-  const sonGirisDegerleri = {}; // Oda bazlı son giriş değerlerini tutar
+  const sonGirisDegerleri = {};
 
-  // 2. ADIM: Farkları hesapla
   chronologicalData.forEach(e => {
     const mv = e.meter_values;
     const rno = e.room_no;
@@ -1041,7 +1103,6 @@ function renderMeterList(){
       return;
     }
 
-    // "Hesapla" sekmesindeki standart formül: L1.L2.L3 -> L1*10000 + L2*100 + L3
     const guncelKWH = ( (parseInt(mv.l1)||0) * 10000 ) + ( (parseInt(mv.l2)||0) * 100 ) + (parseFloat(mv.l3)||0);
 
     if (e.type === 'giris' || !e.type) {
@@ -1056,7 +1117,6 @@ function renderMeterList(){
         if (guncelKWH >= baslangicKWH) {
           diff = guncelKWH - baslangicKWH;
         } else {
-          // Sayaç sıfırlanmış (9999'dan başa dönmüş) durumu
           const maxKWH = (9999 * 10000) + (99 * 100) + 99.9;
           diff = (maxKWH - baslangicKWH) + guncelKWH;
         }
@@ -1067,13 +1127,11 @@ function renderMeterList(){
     }
   });
 
-  // İstatistikleri güncelle
   const tG=mlFiltered.filter(e=>e.type==='giris'||!e.type).length;
   const tC=mlFiltered.filter(e=>e.type==='cikis').length;
   const odalar=new Set(mlFiltered.map(e=>e.room_no));
   statsEl.innerHTML=`<div class="ml-stat"><div class="ml-stat-v">${odalar.size}</div><div class="ml-stat-l">Sayaç</div></div><div class="ml-stat"><div class="ml-stat-v" style="color:var(--accent)">${tG}</div><div class="ml-stat-l">Giriş</div></div><div class="ml-stat"><div class="ml-stat-v" style="color:var(--amber)">${tC}</div><div class="ml-stat-l">Çıkış</div></div><div class="ml-stat"><div class="ml-stat-v">${mlFiltered.length}</div><div class="ml-stat-l">Toplam</div></div>`;
 
-  // Tabloyu oluştur
   let rows='';
   mlFiltered.forEach(e=>{
     const mv=e.meter_values;
@@ -1085,6 +1143,26 @@ function renderMeterList(){
     const isG=e.type!=='cikis';
     const typeDot=isG?`<span class="gd">●</span> Giriş`:`<span class="cd">●</span> Çıkış`;
 
+    // For cikis rows, find the matching giris entry to get the checkin date and meter values
+    let girisDate='',cikisDate=e.checkin_date||'';
+    let girisMv=null;
+    if(!isG){
+      const roomEntries=mlAllData.filter(x=>x.room_no===e.room_no&&(x.type==='giris'||!x.type)&&x.checkin_date<=e.checkin_date);
+      if(roomEntries.length){
+        roomEntries.sort((a,b)=>new Date(b.checkin_date)-new Date(a.checkin_date));
+        const girisEntry=roomEntries[0];
+        girisDate=girisEntry.checkin_date||'';
+        girisMv=girisEntry.meter_values||null;
+      }
+    }
+    const cikisMv=e.meter_values||null;
+    const gL1=girisMv?parseInt(girisMv.l1)||0:0;
+    const gL2=girisMv?parseInt(girisMv.l2)||0:0;
+    const gL3=girisMv?parseFloat(girisMv.l3)||0:0;
+    const cL1=cikisMv?parseInt(cikisMv.l1)||0:0;
+    const cL2=cikisMv?parseInt(cikisMv.l2)||0:0;
+    const cL3=cikisMv?parseFloat(cikisMv.l3)||0:0;
+    const hesaplaCol=!isG?`<div class="ml-c" style="padding:5px 4px;text-align:center;"><button class="ml-calc-btn" onclick="event.stopPropagation();mlGoHesapla('${e.room_no}','${girisDate}','${cikisDate}',${gL1},${gL2},${gL3},${cL1},${cL2},${cL3})">Hesapla</button></div>`:'<div class="ml-c"></div>';
     rows+=`<div class="ml-row ${isG?'gr':'cr'}" onclick="goRoom('${e.room_no}')">
       <div class="ml-c rb"><span class="${isG?'':'eb'}">${e.room_no}</span></div>
       <div class="ml-c kb"><span>${katL}</span></div>
@@ -1094,6 +1172,7 @@ function renderMeterList(){
       <div class="ml-c vc">${parseInt(L2)}</div>
       <div class="ml-c vc">${parseFloat(L3).toFixed(1)}</div>
       ${farkHtml}
+      ${hesaplaCol}
     </div>`;
   });
 
@@ -1101,7 +1180,36 @@ function renderMeterList(){
   <span onclick="mlSort('room')">Oda</span>
   <span onclick="mlSort('kat')">Kat</span>
   <span onclick="mlSort('date')">Tarih</span>
-  <span onclick="mlSort('type')">Tür</span><span>L1</span><span>L2</span><span>L3</span><span>Fark</span></div>${rows}`;
+  <span onclick="mlSort('type')">Tür</span><span>L1</span><span>L2</span><span>L3</span><span>Fark</span><span></span></div>${rows}`;
+}
+
+/* Sayaç listesinden Hesaplama tab'ına git ve doldur */
+function mlGoHesapla(roomNo, girisDate, cikisDate, gL1, gL2, gL3, cL1, cL2, cL3){
+  goTab(4);
+  setTimeout(()=>{
+    const dNo=document.getElementById('daireNo');
+    const gDate=document.getElementById('girisDate');
+    const cDate=document.getElementById('cikisDate');
+    if(dNo)dNo.value=roomNo;
+    if(gDate)gDate.value=girisDate||today();
+    if(cDate)cDate.value=cikisDate||today();
+    // Giriş sayaç değerleri
+    const girisL1=document.getElementById('girisL1');
+    const girisL2=document.getElementById('girisL2');
+    const girisL3=document.getElementById('girisL3');
+    if(girisL1)girisL1.value=gL1||0;
+    if(girisL2)girisL2.value=gL2||0;
+    if(girisL3)girisL3.value=gL3||0;
+    // Çıkış sayaç değerleri
+    const cikisL1=document.getElementById('cikisL1');
+    const cikisL2=document.getElementById('cikisL2');
+    const cikisL3=document.getElementById('cikisL3');
+    if(cikisL1)cikisL1.value=cL1||0;
+    if(cikisL2)cikisL2.value=cL2||0;
+    if(cikisL3)cikisL3.value=cL3||0;
+    tarifeCiz();
+    kwInfoGuncelle();
+  },80);
 }
 
 /* PDF exports */
@@ -1210,8 +1318,6 @@ function kwInfoGuncelle() {
   }
 }
 
-// Kilowatt saat hesaplama (L1-L2-L3 ile)
-// L3 max 99.9, geçince L2 artar. L2 max 99, geçince L1 artar.
 function meterToKWH(l1, l2, l3) {
   return (l1 * 100 * 100) + (l2 * 100) + l3;
 }
@@ -1232,7 +1338,6 @@ function hesaplaTuketim(gL1, gL2, gL3, cL1, cL2, cL3) {
   if (cKWH >= gKWH) {
     return cKWH - gKWH;
   } else {
-    // Sayaç sıfırlamış (tour complet)
     let maxKWH = meterToKWH(9999, 99, 99.9);
     return (maxKWH - gKWH) + cKWH;
   }
@@ -1257,7 +1362,6 @@ function hesapla() {
 
   if (!girisDate || !cikisDate) { alert('Lütfen tarihleri seçiniz.'); return; }
   
-  // L3 kontrolü (0-99.9)
   if (gL3 > 99.9 || cL3 > 99.9) {
     alert('L3 değeri 99.9\'dan büyük olamaz!');
     return;
