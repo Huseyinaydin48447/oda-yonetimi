@@ -31,6 +31,9 @@
   .mode-btns{display:flex;gap:5px;flex-shrink:0;margin-left:auto;}
   .mode-btn{padding:5px 10px;font-size:11px;font-weight:600;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:1.5px solid rgba(255,255,255,.25);background:transparent;color:rgba(255,255,255,.7)}
   .mode-btn.active{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.6);color:#fff}
+  /* Sayaç Ekle butonu */
+  .add-meter-btn{padding:5px 12px;font-size:11px;font-weight:600;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;margin-left:4px;display:none;align-items:center;gap:4px}
+  .add-meter-btn.show{display:inline-flex}
 
   .nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:62px;z-index:99;overflow-x:auto;}
   .nav-btn{flex:1;padding:11px 4px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
@@ -199,7 +202,7 @@
     position: relative;
     overflow: hidden;
     padding: 0;
-    background: #ffffff; /* tek tip arka plan */
+    background: #ffffff;
   }
   .room-flag { position: absolute; top: 1px; right: 1px; width: 5px; height: 5px; border-radius: 50%; background: #00e5ff; }
 
@@ -237,6 +240,14 @@
   .ml-cikis-btn:active{background:#fde68a;}
   .wa-btn{color:#25D366;border-color:#b7f0c8;background:#eafaf0;}
   .wa-btn:active{background:#dff5e7;}
+
+  /* Sayaç Ekle Overlay (küçük oda no girişi) */
+  .meter-add-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1600;align-items:center;justify-content:center;padding:20px}
+  .meter-add-overlay.open{display:flex}
+  .meter-add-sheet{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:320px;text-align:center}
+  .meter-add-sheet h3{font-size:18px;margin-bottom:16px}
+  .meter-add-sheet input{text-align:center;font-size:22px;font-weight:600;padding:12px}
+  .meter-add-sheet .btn-primary{margin-top:12px}
 </style>
 </head>
 <body>
@@ -253,6 +264,10 @@
     <div class="mode-btns">
       <button class="mode-btn active" id="mode-d" onclick="setMode('demirbaş')">Demirbaş</button>
       <button class="mode-btn" id="mode-e" onclick="setMode('elektrik')">Sayaç</button>
+      <button class="add-meter-btn" id="add-meter-btn" onclick="openMeterAddDialog()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Sayaç Ekle
+      </button>
     </div>
   </div>
 
@@ -501,6 +516,18 @@
     </div>
   </div>
 
+  <!-- Sayaç Ekle Dialog (YENİ) -->
+  <div class="meter-add-overlay" id="meter-add-overlay" onclick="if(event.target===this)closeMeterAddDialog()">
+    <div class="meter-add-sheet">
+      <h3>Sayaç Ekle</h3>
+      <div class="field">
+        <span class="label">Oda Numarası</span>
+        <input type="number" id="meter-add-room" placeholder="örn: 307" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary" onclick="goMeterAdd()">Devam</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -636,7 +663,8 @@ function setMode(m){
   q('mode-e').classList.toggle('active',isE);
   q('demirbas-ui').style.display=isE?'none':'block';
   q('elektra-ui').style.display=isE?'block':'none';
-  // istatistik çubuğu kaldırıldığı için burada bir şey yapmaya gerek yok
+  // Sayaç Ekle butonu sadece sayaç modunda görünsün
+  q('add-meter-btn').classList.toggle('show', isE);
   document.querySelector('.app').classList.toggle('full-width', isE);
   if(!isE){if(tab===3)goTab(0);}
   openEntries.clear();
@@ -1245,6 +1273,24 @@ async function deleteEntryElektra(id) {
   if(!confirm('Kayıt silinsin mi?')) return;
   await api(`/rest/v1/entries?id=eq.${id}`, { method: 'DELETE' });
   showToast('Silindi'); loadEntries(); loadRoomsWithEntries(); renderGrid();
+}
+
+/* ── SAYAÇ EKLE DIALOG (YENİ) ── */
+function openMeterAddDialog(){
+  q('meter-add-overlay').classList.add('open');
+  q('meter-add-room').value = '';
+  q('meter-add-room').focus();
+}
+function closeMeterAddDialog(){
+  q('meter-add-overlay').classList.remove('open');
+}
+function goMeterAdd(){
+  const rno = q('meter-add-room').value.trim();
+  if(!rno){showToast('Oda numarası girin','error'); return;}
+  closeMeterAddDialog();
+  openPanel(parseInt(rno));
+  // Doğrudan "YENİ EKLE" sekmesine geç
+  switchPTab('add');
 }
 
 /* ── TOKEN / READONLY ── */
