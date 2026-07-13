@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Oda Yönetimi · Demirbaş &amp; Elektrik</title>
+<title>Oda Yönetimi · Demirbaş & Elektrik</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
   :root {
@@ -269,6 +269,7 @@
     border: 1px solid var(--border); margin-bottom: 8px; cursor: pointer;
   }
   .plaka-result-item:active { background: var(--surface2); }
+  .phone-link { color: #25D366; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
 </style>
 </head>
 <body>
@@ -424,7 +425,7 @@
     <div class="panel-header">
       <div class="panel-room-info">
         <div class="panel-room-badge" id="panel-room-title">000</div>
-        <span style="font-weight:500;font-size:14px;" id="panel-subtitle">Sayaç & Plaka</span>
+        <span style="font-weight:500;font-size:14px;" id="panel-subtitle">Sayaç & Plaka & Telefon</span>
       </div>
       <div onclick="closePanel()" style="cursor:pointer;font-size:24px">✕</div>
     </div>
@@ -459,6 +460,19 @@
           </div>
           <svg class="panel-menu-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </div>
+
+        <div class="panel-menu-card" onclick="showTelefonView()" style="background: #e8f0fe; border-color: #b8d4fe;">
+          <div class="panel-menu-icon" style="background: #d2e3fc;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div style="flex:1">
+            <h4 style="color: #1a56db;">Telefon Numarası Ekle</h4>
+            <p>Telefon kayıtlarını yönet</p>
+          </div>
+          <svg class="panel-menu-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
       </div>
 
       <div id="panel-meter-view" style="display:none;">
@@ -480,6 +494,7 @@
           <div class="field"><label>Oda Numarası</label><input type="text" id="plaka-room" disabled/></div>
           <div class="field"><label>Tarih</label><input type="date" id="plaka-date"/></div>
           <div class="field"><label>Plaka</label><input type="text" id="plaka-no" placeholder="34 ABC 123"/></div>
+          <div class="field"><label>Telefon (isteğe bağlı)</label><input type="tel" id="plaka-phone" placeholder="05XX XXX XX XX"/></div>
           <div class="field"><label>Açıklama</label><textarea id="plaka-note" rows="2" placeholder="Açıklama..."></textarea></div>
           <div class="field">
             <label>Fotoğraf (opsiyonel)</label>
@@ -489,6 +504,29 @@
           <input type="hidden" id="plaka-edit-id"/>
           <button class="btn-primary" id="plaka-save-btn" onclick="savePlaka()">Kaydet</button>
           <button class="btn" style="margin-top:8px;" onclick="cancelPlakaForm()">İptal</button>
+        </div>
+      </div>
+
+      <div id="panel-telefon-view" style="display:none;">
+        <div style="margin-bottom:15px; display:flex; gap:8px;">
+          <button class="btn" onclick="showTelefonForm()" style="flex:1;">➕ Telefon Ekle</button>
+          <button class="btn" onclick="backToMenu()" style="flex:1;">↩ Menü</button>
+        </div>
+        <div id="telefon-list"></div>
+        <div id="telefon-form" style="display:none; background:#fff; border-radius:12px; padding:16px; margin-top:10px;">
+          <h3 id="telefon-form-title">Yeni Telefon Numarası</h3>
+          <div class="field"><label>Oda Numarası</label><input type="text" id="telefon-room" disabled/></div>
+          <div class="field"><label>Tarih</label><input type="date" id="telefon-date"/></div>
+          <div class="field"><label>Telefon Numarası</label><input type="tel" id="telefon-no" placeholder="05XX XXX XX XX"/></div>
+          <div class="field"><label>Açıklama</label><textarea id="telefon-note" rows="2" placeholder="Açıklama..."></textarea></div>
+          <div class="field">
+            <label>Fotoğraf (opsiyonel)</label>
+            <input type="file" id="telefon-photo" accept="image/*" onchange="previewTelefonPhoto()"/>
+            <div id="telefon-photo-preview" class="thumb-grid"></div>
+          </div>
+          <input type="hidden" id="telefon-edit-id"/>
+          <button class="btn-primary" id="telefon-save-btn" onclick="saveTelefon()">Kaydet</button>
+          <button class="btn" style="margin-top:8px;" onclick="cancelTelefonForm()">İptal</button>
         </div>
       </div>
     </div>
@@ -633,7 +671,7 @@
 /* ── GENEL YARDIMCILAR ── */
 const SB='https://tpfdsmexywjnsbkfphwq.supabase.co';
 const KEY='sb_publishable_3pKKUsVjgXPlF-DCzc2ofQ_Qmq3f00L';
-const BUCKETS={'demirbaş':'photos','elektrik':'meters'};
+const BUCKETS={'demirbaş':'photos','elektrik':'meters','plaka':'photos','telefon':'photos'};
 const MODES={
   'demirbaş':{title:'Demirbaş Takibi',ph:'Oda no girin (ör: 307)',rl:'Oda numarası *',dl:'Giriş tarihi *',nl:'Not',np:'Açıklama...',tags:['1+1','2+1']},
   'elektrik':{title:'Elektrik Sayacı',ph:'Sayaç / oda no girin',rl:'Sayaç / Oda no *',dl:'Okuma tarihi *',nl:'Not',np:'Açıklama...',tags:['1. Kat','2. Kat','3. Kat','4. Kat','5. Kat','6. Kat','7. Kat','8. Kat']}
@@ -1163,6 +1201,7 @@ function openPanel(rno) {
   const lastView = localStorage.getItem('panelView') || 'menu';
   if (lastView === 'meter') showMeterView();
   else if (lastView === 'plaka') showPlakaView();
+  else if (lastView === 'telefon') showTelefonView();
   else backToMenu();
 }
 function closePanel() {
@@ -1174,13 +1213,15 @@ function backToMenu() {
   q('panel-main-menu').style.display = 'flex';
   q('panel-meter-view').style.display = 'none';
   q('panel-plaka-view').style.display = 'none';
-  q('panel-subtitle').textContent = 'Sayaç & Plaka';
+  q('panel-telefon-view').style.display = 'none';
+  q('panel-subtitle').textContent = 'Sayaç & Plaka & Telefon';
   try{localStorage.setItem('panelView', 'menu');}catch(e){}
 }
 function showMeterView() {
   q('panel-main-menu').style.display = 'none';
   q('panel-meter-view').style.display = 'block';
   q('panel-plaka-view').style.display = 'none';
+  q('panel-telefon-view').style.display = 'none';
   q('panel-subtitle').textContent = 'Sayaç Okumaları';
   loadMeterEntries();
   try{localStorage.setItem('panelView', 'meter');}catch(e){}
@@ -1189,9 +1230,19 @@ function showPlakaView() {
   q('panel-main-menu').style.display = 'none';
   q('panel-meter-view').style.display = 'none';
   q('panel-plaka-view').style.display = 'block';
+  q('panel-telefon-view').style.display = 'none';
   q('panel-subtitle').textContent = 'Plaka Kayıtları';
   loadPlakaEntries();
   try{localStorage.setItem('panelView', 'plaka');}catch(e){}
+}
+function showTelefonView() {
+  q('panel-main-menu').style.display = 'none';
+  q('panel-meter-view').style.display = 'none';
+  q('panel-plaka-view').style.display = 'none';
+  q('panel-telefon-view').style.display = 'block';
+  q('panel-subtitle').textContent = 'Telefon Kayıtları';
+  loadTelefonEntries();
+  try{localStorage.setItem('panelView', 'telefon');}catch(e){}
 }
 
 /* ── SAYAÇ GÖRÜNÜMÜ ── */
@@ -1247,6 +1298,15 @@ async function deleteMeterEntry(id) {
 }
 
 /* ── PLAKA GÖRÜNÜMÜ ── */
+function parsePlakaNote(note) {
+  if (!note) return { aciklama: '', telefon: '' };
+  if (note.includes('|||')) {
+    const parts = note.split('|||');
+    return { aciklama: parts[0] || '', telefon: parts[1] || '' };
+  }
+  return { aciklama: note, telefon: '' };
+}
+
 async function loadPlakaEntries() {
   const wrap = q('plaka-list');
   wrap.innerHTML = '<div style="padding:20px; text-align:center">Yükleniyor...</div>';
@@ -1256,11 +1316,17 @@ async function loadPlakaEntries() {
     if(!data.length) { wrap.innerHTML = '<div style="padding:20px; text-align:center; color:#888">Henüz plaka kaydı yok.</div>'; return; }
     wrap.innerHTML = data.map(e => {
       const plaka = e.category || '';
+      const { aciklama, telefon } = parsePlakaNote(e.note);
+      const phoneHtml = telefon ? `<a href="tel:${telefon.replace(/\s/g,'')}" class="phone-link" onclick="event.stopPropagation()">📞 ${telefon}</a>` : '';
       return `
       <div class="entry-card" style="margin-bottom:8px;">
         <div class="entry-head" style="cursor:default;">
           <div class="date-badge e">📅 ${fmtDate(e.checkin_date)}</div>
-          <div class="entry-meta"><div class="nt">🚗 ${plaka || 'Plaka yok'}</div><div class="cat">${e.note||''}</div></div>
+          <div class="entry-meta">
+            <div class="nt">🚗 ${plaka || 'Plaka yok'}</div>
+            <div class="cat">${aciklama || ''}</div>
+            ${phoneHtml ? `<div class="cat">${phoneHtml}</div>` : ''}
+          </div>
           <span class="entry-count">${(e.photo_urls||[]).length} foto</span>
         </div>
         <div class="entry-footer"><div class="entry-footer-actions">
@@ -1277,6 +1343,7 @@ function showPlakaForm(editId = null) {
   q('plaka-room').value = currentRoom;
   q('plaka-date').value = today();
   q('plaka-no').value = '';
+  q('plaka-phone').value = '';
   q('plaka-note').value = '';
   q('plaka-photo').value = '';
   q('plaka-photo-preview').innerHTML = '';
@@ -1288,7 +1355,9 @@ function showPlakaForm(editId = null) {
       if(entry) {
         q('plaka-date').value = entry.checkin_date || '';
         q('plaka-no').value = entry.category || '';
-        q('plaka-note').value = entry.note || '';
+        const { aciklama, telefon } = parsePlakaNote(entry.note);
+        q('plaka-note').value = aciklama || '';
+        q('plaka-phone').value = telefon || '';
         if(entry.photo_urls && entry.photo_urls.length) {
           q('plaka-photo-preview').innerHTML = entry.photo_urls.map(u => `<div class="thumb-item"><img src="${u}"></div>`).join('');
         }
@@ -1307,8 +1376,10 @@ async function savePlaka() {
   const id = q('plaka-edit-id').value;
   const date = q('plaka-date').value;
   const plakaNo = q('plaka-no').value.trim();
-  const note = q('plaka-note').value.trim();
+  const telefon = q('plaka-phone').value.trim();
+  const aciklama = q('plaka-note').value.trim();
   if (!date || !plakaNo) { showToast('Tarih ve plaka zorunlu', 'error'); return; }
+  const combinedNote = aciklama + (telefon ? '|||' + telefon : '');
   const btn = q('plaka-save-btn'); btn.disabled = true; btn.innerHTML = '<span class="loader"></span>';
   try {
     let photo_urls = [];
@@ -1324,7 +1395,7 @@ async function savePlaka() {
       mode: 'plaka',
       checkin_date: date,
       category: plakaNo,
-      note: note,
+      note: combinedNote,
       photo_urls: photo_urls
     };
     if (id) {
@@ -1375,13 +1446,151 @@ async function createPlakaLink(id) {
     const entry = await fetchEntry(id);
     if(!entry) return;
     const token = genToken();
-    // Plaka linklerinde entry_type boş bırakıyoruz, böylece readonly görünümde type filtresi olmaz.
     await api('/rest/v1/tokens', {
       method: 'POST',
       headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ room_no: String(currentRoom), mod: 'plaka', token, entry_date: entry.checkin_date, entry_type: '' })
     });
     const url = `${location.origin+location.pathname}?oda=${currentRoom}&mod=plaka&tarih=${entry.checkin_date}&token=${token}`;
+    navigator.clipboard.writeText(url).then(() => showToast('Link kopyalandı!', 'success'));
+  } catch(e) { showToast('Hata', 'error'); }
+}
+
+/* ── TELEFON GÖRÜNÜMÜ (YENİ) ── */
+async function loadTelefonEntries() {
+  const wrap = q('telefon-list');
+  wrap.innerHTML = '<div style="padding:20px; text-align:center">Yükleniyor...</div>';
+  try {
+    const res = await api(`/rest/v1/entries?room_no=eq.${currentRoom}&mode=eq.telefon&order=checkin_date.desc`);
+    const data = await res.json();
+    if(!data.length) { wrap.innerHTML = '<div style="padding:20px; text-align:center; color:#888">Henüz telefon kaydı yok.</div>'; return; }
+    wrap.innerHTML = data.map(e => {
+      const telefonNo = e.category || '';
+      const aciklama = e.note || '';
+      const phoneHtml = telefonNo ? `<a href="tel:${telefonNo.replace(/\s/g,'')}" class="phone-link">📞 ${telefonNo}</a>` : '';
+      return `
+      <div class="entry-card" style="margin-bottom:8px;">
+        <div class="entry-head" style="cursor:default;">
+          <div class="date-badge e">📅 ${fmtDate(e.checkin_date)}</div>
+          <div class="entry-meta">
+            <div class="nt">📞 ${telefonNo || 'Numara yok'}</div>
+            <div class="cat">${aciklama || ''}</div>
+          </div>
+          <span class="entry-count">${(e.photo_urls||[]).length} foto</span>
+        </div>
+        <div class="entry-footer"><div class="entry-footer-actions">
+          <button class="link-btn" onclick="createTelefonLink('${e.id}')">Link Kopyala</button>
+          <button class="edit-btn" onclick="editTelefon('${e.id}')">Düzenle</button>
+          <button class="del-btn" onclick="deleteTelefon('${e.id}')">Sil</button>
+        </div></div>
+      </div>`;
+    }).join('');
+  } catch(e) { wrap.innerHTML = 'Hata.'; }
+}
+function showTelefonForm(editId = null) {
+  q('telefon-form').style.display = 'block';
+  q('telefon-room').value = currentRoom;
+  q('telefon-date').value = today();
+  q('telefon-no').value = '';
+  q('telefon-note').value = '';
+  q('telefon-photo').value = '';
+  q('telefon-photo-preview').innerHTML = '';
+  q('telefon-edit-id').value = '';
+  if (editId) {
+    q('telefon-form-title').textContent = 'Telefon Düzenle';
+    q('telefon-edit-id').value = editId;
+    fetchEntry(editId).then(entry => {
+      if(entry) {
+        q('telefon-date').value = entry.checkin_date || '';
+        q('telefon-no').value = entry.category || '';
+        q('telefon-note').value = entry.note || '';
+        if(entry.photo_urls && entry.photo_urls.length) {
+          q('telefon-photo-preview').innerHTML = entry.photo_urls.map(u => `<div class="thumb-item"><img src="${u}"></div>`).join('');
+        }
+      }
+    });
+  } else {
+    q('telefon-form-title').textContent = 'Yeni Telefon Numarası';
+  }
+}
+async function saveTelefon() {
+  const id = q('telefon-edit-id').value;
+  const date = q('telefon-date').value;
+  const telefonNo = q('telefon-no').value.trim();
+  const aciklama = q('telefon-note').value.trim();
+  if (!date || !telefonNo) { showToast('Tarih ve telefon numarası zorunlu', 'error'); return; }
+  const btn = q('telefon-save-btn'); btn.disabled = true; btn.innerHTML = '<span class="loader"></span>';
+  try {
+    let photo_urls = [];
+    const photoInput = q('telefon-photo');
+    if (photoInput.files.length) {
+      for (const f of photoInput.files) {
+        const url = await uploadImg(f, currentRoom);
+        photo_urls.push(url);
+      }
+    }
+    const body = {
+      room_no: String(currentRoom),
+      mode: 'telefon',
+      checkin_date: date,
+      category: telefonNo,
+      note: aciklama,
+      photo_urls: photo_urls
+    };
+    if (id) {
+      const existing = await fetchEntry(id);
+      if (existing && existing.photo_urls) {
+        body.photo_urls = [...existing.photo_urls, ...photo_urls];
+      }
+      await api(`/rest/v1/entries?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+      showToast('Telefon güncellendi', 'success');
+    } else {
+      await api('/rest/v1/entries', { method: 'POST', body: JSON.stringify(body) });
+      showToast('Telefon eklendi', 'success');
+    }
+    cancelTelefonForm();
+    loadTelefonEntries();
+  } catch(e) { showToast('Hata: '+e.message, 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = 'Kaydet'; }
+}
+function cancelTelefonForm() {
+  q('telefon-form').style.display = 'none';
+  q('telefon-edit-id').value = '';
+}
+function editTelefon(id) {
+  showTelefonForm(id);
+}
+async function deleteTelefon(id) {
+  if(!confirm('Telefon kaydı silinsin mi?')) return;
+  await api(`/rest/v1/entries?id=eq.${id}`, {method:'DELETE'});
+  showToast('Silindi');
+  loadTelefonEntries();
+}
+function previewTelefonPhoto() {
+  const input = q('telefon-photo');
+  const preview = q('telefon-photo-preview');
+  preview.innerHTML = '';
+  for(const f of input.files) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const div = document.createElement('div'); div.className='thumb-item';
+      div.innerHTML = `<img src="${e.target.result}">`;
+      preview.appendChild(div);
+    };
+    reader.readAsDataURL(f);
+  }
+}
+async function createTelefonLink(id) {
+  try {
+    const entry = await fetchEntry(id);
+    if(!entry) return;
+    const token = genToken();
+    await api('/rest/v1/tokens', {
+      method: 'POST',
+      headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ room_no: String(currentRoom), mod: 'telefon', token, entry_date: entry.checkin_date, entry_type: '' })
+    });
+    const url = `${location.origin+location.pathname}?oda=${currentRoom}&mod=telefon&tarih=${entry.checkin_date}&token=${token}`;
     navigator.clipboard.writeText(url).then(() => showToast('Link kopyalandı!', 'success'));
   } catch(e) { showToast('Hata', 'error'); }
 }
@@ -1449,7 +1658,7 @@ async function saveQuickAddEntry() {
   }
 }
 
-/* ── PLAKA ARAMA (YENİ) ── */
+/* ── PLAKA ARAMA (TELEFON DESTEĞİ İLE) ── */
 function openPlakaSearch() {
   q('plaka-search-overlay').classList.add('open');
   q('plaka-search-input').value = '';
@@ -1477,13 +1686,16 @@ async function doPlakaSearch() {
     resultsDiv.innerHTML = data.map(entry => {
       const plaka = entry.category || '';
       const date = fmtDate(entry.checkin_date);
-      const note = entry.note || '';
+      const { aciklama, telefon } = parsePlakaNote(entry.note);
+      const phoneHtml = telefon ? `<div><a href="tel:${telefon.replace(/\s/g,'')}" class="phone-link">📞 ${telefon}</a></div>` : '';
+      const noteHtml = aciklama ? `<div style="font-size:12px;color:var(--text);margin-top:2px;">${aciklama}</div>` : '';
       return `
         <div class="plaka-result-item" onclick="goToRoomFromPlaka('${entry.room_no}')">
           <div>
             <div style="font-weight:600;font-size:15px;">🚗 ${plaka}</div>
             <div style="font-size:12px;color:var(--muted);">Oda ${entry.room_no} · ${date}</div>
-            ${note ? `<div style="font-size:12px;color:var(--text);margin-top:2px;">${note}</div>` : ''}
+            ${noteHtml}
+            ${phoneHtml}
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </div>
@@ -1517,11 +1729,17 @@ function buildReadonlyCard(entry, ei, isE, mod='') {
   const imgs=urls.map((u,i)=>`<div class="img-thumb" onclick="openLb(${ei},${i})"><img src="${u}" loading="lazy"/></div>`).join('');
   let badgeText = 'Giriş';
   if (mod === 'plaka') badgeText = 'Plaka';
+  else if (mod === 'telefon') badgeText = 'Telefon';
   else if (entry.type === 'cikis') badgeText = 'Çıkış';
+  let noteDisplay = entry.note || '';
+  if (mod === 'plaka') {
+    const { aciklama, telefon } = parsePlakaNote(entry.note);
+    noteDisplay = aciklama + (telefon ? ' · 📞 ' + telefon : '');
+  }
   return`<div class="entry-card">
     <div class="entry-head" data-ei="${ei}" onclick="toggleEntry(this)">
       <div class="date-badge${isE?' e':''}">${badgeText} · ${fmtDate(entry.checkin_date)}</div>
-      <div class="entry-meta">${cats.length?`<div class="cat">${cats.join(' · ')}</div>`:''}${entry.note?`<div class="nt">${entry.note}</div>`:''}</div>
+      <div class="entry-meta">${cats.length?`<div class="cat">${cats.join(' · ')}</div>`:''}${noteDisplay?`<div class="nt">${noteDisplay}</div>`:''}</div>
       <span class="entry-count">${urls.length} foto</span>
       <svg class="chevron open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
     </div>
@@ -1535,9 +1753,8 @@ function buildReadonlyCard(entry, ei, isE, mod='') {
 }
 
 async function showReadonlyEntry(oda, mod, tarih, entryType) {
-  // Plaka modu için label ve badge ayarları
-  const label = mod === 'elektrik' ? 'Sayaç' : (mod === 'plaka' ? 'Plaka' : 'Oda');
-  const isE = mod === 'elektrik' || mod === 'plaka'; // amber badge için
+  const label = mod === 'elektrik' ? 'Sayaç' : (mod === 'plaka' ? 'Plaka' : (mod === 'telefon' ? 'Telefon' : 'Oda'));
+  const isE = mod === 'elektrik' || mod === 'plaka' || mod === 'telefon';
   q('topbar-title').textContent = `${label} ${oda}`;
   q('topbar-sub').textContent = `${fmtDate(tarih)} · Salt okunur`;
 
@@ -1569,12 +1786,10 @@ async function showReadonlyEntry(oda, mod, tarih, entryType) {
     return;
   }
 
-  // Normal tekil kayıt (demirbaş, elektrik, plaka)
   const el = q('sresult');
   el.innerHTML = '<div class="empty">Yükleniyor...</div>';
   try {
     let url = `/rest/v1/entries?room_no=eq.${encodeURIComponent(oda)}&checkin_date=eq.${encodeURIComponent(tarih)}&mode=eq.${encodeURIComponent(mod)}&order=checkin_date.desc`;
-    // entryType varsa ve pair değilse type filtresi ekleyelim, ama plaka için boş geliyor zaten
     if (entryType && entryType !== 'pair') url += `&type=eq.${encodeURIComponent(entryType)}`;
     const res = await api(url);
     const data = await res.json();
@@ -1594,8 +1809,7 @@ if(_oda&&_token){
   q('s1').remove();q('s2').remove();
   document.querySelector('#s0 > div:first-child').style.display='none';q('stab-room-content').style.display='none';q('stab-date-content').style.display='none';
   q('sresult').innerHTML='<div class="empty">Doğrulanıyor...</div>';
-  // _mod plaka olabilir, onu da doğru mod olarak ata
-  const _m = _mod==='elektrik' ? 'elektrik' : (_mod==='plaka' ? 'plaka' : 'demirbaş');
+  const _m = _mod==='elektrik' ? 'elektrik' : (_mod==='plaka' ? 'plaka' : (_mod==='telefon' ? 'telefon' : 'demirbaş'));
   mode=_m;
   api(`/rest/v1/tokens?token=eq.${encodeURIComponent(_token)}&room_no=eq.${encodeURIComponent(_oda)}&mod=eq.${encodeURIComponent(_m)}&select=id,entry_date,paired_date`)
     .then(r=>r.json()).then(data=>{if(!data||!data.length){showAccessError();return;}const tr=data[0];if(_tarih){if(tr.entry_date&&tr.entry_date!==_tarih){showAccessError();return;}showReadonlyEntry(_oda, _m, _tarih, _type);}else{showReadonlyEntry(_oda,_m,tr.entry_date||today());}}).catch(()=>showAccessError());
